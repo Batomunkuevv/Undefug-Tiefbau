@@ -506,6 +506,11 @@ svg {
 
 .cookie__title {
   margin-bottom: 32px;
+  text-align: left;
+}
+
+.cookie__text p {
+  text-align: left;
 }
 
 .cookie__options {
@@ -529,6 +534,10 @@ svg {
 .cookie__option-title {
   margin-bottom: 16px;
   font-size: 20px;
+}
+
+.cookie__option-text {
+  text-align: left;
 }
 
 .cookie__link {
@@ -722,6 +731,16 @@ svg {
   -ms-grid-columns: (1fr)[4];
   grid-template-columns: repeat(4, 1fr);
   gap: 24px;
+}
+
+.feedback-form__item--category {
+  position: relative;
+  z-index: 99;
+}
+
+.feedback-form__item--job {
+  position: relative;
+  z-index: 100;
 }
 
 .feedback-form__file {
@@ -1156,7 +1175,7 @@ svg {
   -webkit-transform: translate(0, 100%);
       -ms-transform: translate(0, 100%);
           transform: translate(0, 100%);
-  z-index: 99;
+  z-index: 100;
   opacity: 0;
   visibility: hidden;
 }
