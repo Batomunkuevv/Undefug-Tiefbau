@@ -83,8 +83,6 @@ const initTabs = () => {
             tab.addEventListener('click', () => {
                 const tabTabcontent = findTabTabcontent(tabValue);
 
-                updateCategoriesSelector(tabTabcontent);
-                hideFeedbackIcon();
                 removeActiveClasses(tabs);
                 removeActiveClasses(tabcontents);
 
@@ -96,29 +94,6 @@ const initTabs = () => {
                 }
             })
         })
-
-        function updateCategoriesSelector(tabcontent) {
-            const categoriesSelectorToggler = document.querySelector('.feedback-form__item--category .selector__toggler');
-            const categoriesSelectorInput = document.querySelector('.feedback-form__item--category .selector__input');
-            const categoriesSelectorDropdown = document.querySelector('.feedback-form__item--category .selector__dropdown');
-            const categories = Array.from(tabcontent.querySelectorAll('[data-vacancie]')).map(item => item.dataset.vacancie);
-
-            categoriesSelectorDropdown.innerHTML = '';
-            categoriesSelectorToggler.textContent = 'Wählen Sie ein Stellenangebot';
-            categoriesSelectorInput.value = '';
-
-            categories.forEach(category => {
-                categoriesSelectorDropdown.append(createOptionCategories(category));
-            })
-        }
-
-        function hideFeedbackIcon(){
-            const feedIcon = document.querySelector('.feedback__icon');
-
-            if(!feedIcon) return;
-
-            feedIcon.classList.add('is-hidden');
-        }
 
         function findTabTabcontent(value) {
             const tabTabcontent = Array.from(tabcontents).find(tabcontent => tabcontent.dataset.tabcontent === value);
@@ -346,8 +321,210 @@ function createOptionCategories(category) {
     return optionNode;
 }
 
+const initCookies = () => {
+    initCookieOptions();
+    initCookieWarning();
+
+    function initCookieOptions() {
+        const cookie = document.querySelector('.cookie');
+
+        if (!cookie) return;
+
+        const cookieOptions = cookie.querySelectorAll('.switcher__checkbox');
+        const cookieAccept = cookie.querySelector('[data-cookie-accept]');
+        const cookieProhibit = cookie.querySelector('[data-cookie-prohibit]');
+        const cookieSave = cookie.querySelector('[data-cookie-save]');
+        const cookieWarning = document.querySelector('.cookie-warning');
+
+        cookieAccept.addEventListener('click', handleCookieAccept);
+        cookieProhibit.addEventListener('click', handleCookieProhibit);
+        cookieSave.addEventListener('click', handleCookieSave);
+
+        setAcceptedCookiesOptions();
+
+        function setAcceptedCookiesOptions() {
+            cookieOptions.forEach(option => {
+                const { name } = option;
+                const cookieOption = getCookie(name);
+
+                if (!!cookieOption) {
+                    option.checked = true;
+                }
+            })
+        }
+
+        function handleCookieAccept() {
+            cookieOptions.forEach(option => {
+                const { name } = option;
+
+                option.checked = true;
+                setCookie(name, true);
+                cookieWarning.classList.add('is-hidden');
+            })
+        }
+
+        function handleCookieProhibit() {
+            cookieOptions.forEach(option => {
+                const { name } = option;
+
+
+                option.checked = false;
+                setCookie(name, false);
+            })
+            setCookie('cookie-accept', false);
+        }
+
+        function handleCookieSave() {
+            let isCookiesUncheck = false;
+
+            cookieOptions.forEach(option => {
+                const { name, checked } = option;
+
+                if (checked) {
+                    setCookie(name, true);
+                    isCookiesUncheck = true;
+                    cookieWarning.classList.add('is-hidden');
+                } else {
+                    setCookie(name, false)
+                }
+            })
+
+            if (isCookiesUncheck) {
+                setCookie('cookie-accept', false)
+            }
+        }
+    }
+
+    function initCookieWarning() {
+        const cookieWarning = document.querySelector('.cookie-warning');
+
+        if (!cookieWarning) return;
+
+        const cookieAccept = cookieWarning.querySelector('[data-accept-cookie]');
+        const cookieProhibit = cookieWarning.querySelector('[data-prohibit-cookie]');
+        const cookieOptionsAccept = document.querySelector('[data-cookie-accept]');
+
+        cookieAccept.addEventListener('click', handleCookieAccept)
+        cookieProhibit.addEventListener('click', handleCookieProhibit)
+
+        checkAcceptCookie();
+
+        function checkAcceptCookie() {
+            const isAcceptCookie = getCookie('cookie-accept');
+            const isNecessaryCookie = getCookie('necessary-cookie');
+            const isMediaCookie = getCookie('media-cookie');
+            const isCalculatorCookie = getCookie('calculator-cookie');
+
+            if (isAcceptCookie !== 'true' && isNecessaryCookie !== 'true' && isMediaCookie !== 'true' && isCalculatorCookie !== 'true') cookieWarning.classList.remove('is-hidden');
+        }
+
+        function handleCookieAccept() {
+            setCookie('cookie-accept', true);
+            cookieWarning.classList.add('is-hidden');
+            cookieOptionsAccept.click();
+        }
+
+        function handleCookieProhibit() {
+            setCookie('cookie-accept', 'false')
+            cookieWarning.classList.add('is-hidden')
+        }
+    }
+}
+
+function setCookie(name, value, days = 1) {
+    var expires = "";
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "") + expires + "; path=/";
+}
+
+function getCookie(name) {
+    const matches = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, "\\$1") + "=([^;]*)"));
+    return matches ? decodeURIComponent(matches[1]) : undefined;
+}
+
+function initPopups() {
+    const overlay = document.querySelector(".overlay");
+
+    if (!overlay) return;
+
+    initCloseModalsOnClickOverlay();
+
+    const popups = document.querySelectorAll("[data-popup]");
+    const popupBtns = document.querySelectorAll("[data-popup-btn]");
+
+    if (!popupBtns) return;
+
+    popupBtns.forEach((btn) => {
+        const popup = overlay.querySelector(`[data-popup=${btn.dataset.popupBtn}]`);
+
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            openModal(popup);
+        });
+    });
+
+    popups.forEach((popup) => {
+        const popupCloses = popup.querySelectorAll("[data-popup-close]");
+
+        if (popupCloses) {
+            popupCloses.forEach((close) => {
+                close.addEventListener("click", (e) => {
+                    closeModal(popup);
+                });
+            });
+        }
+    });
+
+    function openModal(popup) {
+        overlay.classList.remove("is-hidden");
+        popup.classList.remove("is-hidden");
+        document.body.classList.add("lock");
+    }
+
+    function closeModal(popup) {
+        const popupVideos = popup.querySelectorAll('video');
+
+        if (popupVideos) stopPopupVideos(popupVideos);
+
+        overlay.classList.add("is-hidden");
+        popup.classList.add("is-hidden");
+        document.body.classList.remove("lock");
+    }
+
+    function stopPopupVideos(videos) {
+        videos.forEach(video => video.pause());
+    }
+
+    function initCloseModalsOnClickOverlay() {
+        const overlayChilds = Array.from(overlay.querySelectorAll("*"));
+
+        overlay.addEventListener("click", (e) => {
+            const { target } = e;
+
+            if (!contains(overlayChilds, target)) {
+                if (popups) {
+                    popups.forEach((popup) => {
+                        closeModal(popup);
+                    });
+                }
+                document.body.classList.remove("lock");
+                overlay.classList.remove("is-visible");
+            }
+        });
+    }
+}
+
+function contains(array, item) {
+    return array.includes(item);
+}
 
 window.addEventListener("DOMContentLoaded", (e) => {
+    initPopups();
+    initCookies();
     setCategories();
     changeIconOnCategorySelect();
     initVacancies();
